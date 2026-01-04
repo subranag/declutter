@@ -1,8 +1,106 @@
+import * as fs from 'fs';
+import { markdownToHtml, ok, runLoading } from './utility';
+import type { Scraper } from './page';
+import type { DeclutterInput } from './declutter';
+import path from 'path';
+import { de } from 'zod/locales';
+
 const HTML_DATA_PLACEHOLDER = '__HTML_DATA__';
 const STYLE_DATA_PLACEHOLDER = '__STYLE_DATA__';
 
 export type StyleName = keyof typeof stylesMap;
 export const DEFAULT_STYLE: StyleName = 'MINIMALIST_SWISS';
+
+export const DEFAULT_OUTPUT_FORMAT = 'pdf' as const;
+export const allowedFormats = ['md', DEFAULT_OUTPUT_FORMAT, 'html'] as const;
+export type AllowedFormats = (typeof allowedFormats)[number];
+const DECLUTTERED_DIRECTORY = 'Decluttered';
+
+export const writeOutput = async ({
+  scraper,
+  url,
+  declutteredMarkdown,
+  outputFormat,
+  styleName,
+  outputDirectory,
+}: DeclutterInput & {
+  readonly scraper: Scraper;
+  readonly declutteredMarkdown: string | undefined;
+}): Promise<void> => {
+  const { directory, fileNamePrefix } = pathFromUrl(url);
+
+  const finalDirectory = `${outputDirectory}${path.sep}${DECLUTTERED_DIRECTORY}${path.sep}${directory}`;
+  fs.mkdirSync(finalDirectory, { recursive: true });
+  const finalPath = `${finalDirectory}${path.sep}${fileNamePrefix}`;
+
+  switch (outputFormat) {
+    case 'md':
+      const markdownPath = `${finalPath}.md`;
+      fs.writeFileSync(markdownPath, declutteredMarkdown!, {
+        encoding: 'utf-8',
+      });
+      ok(`written output to ${markdownPath}`);
+      break;
+    case 'html':
+      const finalHtml = styledHtml(
+        markdownToHtml(declutteredMarkdown!),
+        styleName
+      );
+      const htmlPath = `${finalPath}.html`;
+      fs.writeFileSync(htmlPath, finalHtml, {
+        encoding: 'utf-8',
+      });
+      ok(`written output to ${htmlPath}`);
+      break;
+    case 'pdf':
+      const finalHtmlPdf = styledHtml(
+        markdownToHtml(declutteredMarkdown!),
+        styleName
+      );
+      const pdfPath = `${finalPath}.pdf`;
+      await runLoading(
+        scraper.printPdf(finalHtmlPdf, pdfPath),
+        'Generating PDF...'
+      );
+      ok(`written output to ${pdfPath}`);
+      break;
+    default:
+      throw new Error(`unknown format: ${outputFormat} cannot generate output`);
+  }
+};
+
+export const pathFromUrl = (
+  url: URL
+): {
+  readonly directory: string;
+  readonly fileNamePrefix: string;
+} => {
+  const directory = url.hostname.replaceAll('www.', '').replaceAll('.', '-');
+
+  if (url.pathname === '/' || url.pathname === '') {
+    return {
+      directory,
+      fileNamePrefix: 'index',
+    };
+  }
+
+  const pathSegments = url.pathname
+    .split('/')
+    .map((segment) => segment.trim())
+    .filter((segment) => segment !== '');
+
+  if (pathSegments.length === 0) {
+    return {
+      directory,
+      fileNamePrefix: 'index',
+    };
+  }
+
+  return {
+    directory,
+    fileNamePrefix: pathSegments[pathSegments.length - 1]!,
+  };
+};
 
 export const stylesMap = {
   MINIMALIST_SWISS: `

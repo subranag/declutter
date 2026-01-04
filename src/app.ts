@@ -25,14 +25,19 @@ import { createOllama } from 'ai-sdk-ollama';
 import { isErr } from 'cmd-ts/dist/cjs/Result';
 import { stdin as input, stdout as output } from 'process';
 import * as readline from 'readline/promises';
-import { DEFAULT_STYLE, stylesMap, type StyleName } from './outputs';
+import {
+  allowedFormats,
+  DEFAULT_OUTPUT_FORMAT,
+  DEFAULT_STYLE,
+  stylesMap,
+  type AllowedFormats,
+  type StyleName,
+} from './outputs';
 import { warn } from './utility';
 
 const HTTPS_START = /^https?:\/\//;
-const DEFAULT_FORMAT = 'pdf' as const;
+
 const DEFAULT_MAX_OUTPUT_TOKENS = 10_000 as const;
-const allowedFormats = ['md', DEFAULT_FORMAT, 'html'] as const;
-export type AllowedFormats = (typeof allowedFormats)[number];
 
 const OutputFormatType: Type<string, AllowedFormats> = {
   async from(params: string): Promise<AllowedFormats> {
@@ -96,7 +101,7 @@ type Provider = (typeof providers)[number];
 
 const provideDefaultModel: Record<Provider, string> = {
   gemini: 'gemini-2.5-flash',
-  anthropic: 'claude-sonnet-4-0',
+  anthropic: 'claude-haiku-4-5',
   openai: 'gpt-4o-mini',
   openrouter: 'google/gemini-2.0-flash-exp:free',
   ollama: 'deepseek-r1:7b',
@@ -129,8 +134,8 @@ const exec = command({
       short: 'f',
       description: `format of the decluttered output should be one of : ${allowedFormats.join(
         ', '
-      )}, defaults to ${DEFAULT_FORMAT}`,
-      defaultValue: () => DEFAULT_FORMAT,
+      )}, defaults to ${DEFAULT_OUTPUT_FORMAT}`,
+      defaultValue: () => DEFAULT_OUTPUT_FORMAT,
     }),
     styleName: option({
       type: OutputStyling,
@@ -233,7 +238,6 @@ const exec = command({
     } catch (error) {
       if (error instanceof Error) {
         console.error(`❌ Error Decluttering: ${error.message}`);
-        throw error;
       }
     }
   },
@@ -281,6 +285,8 @@ const getModel = (selctionInput: ModelSelectionInput): LanguageModel => {
         apiKey: openRouterKey,
       });
       return openRouter(modelName ?? provideDefaultModel.openrouter);
+    default:
+      throw new Error(`Unsupported provider selected: ${resolvedProvider}`);
   }
 };
 
@@ -355,15 +361,15 @@ const repl = command({
     const rl = readline.createInterface({ input, output });
 
     while (true) {
-      const input = await rl.question('> ');
+      const userInput = await rl.question('> ');
 
-      if (input.toLowerCase().trim() === 'exit') {
+      if (userInput.toLowerCase().trim() === 'exit') {
         console.log('👋 Goodbye! Exiting REPL.');
         rl.close();
         break;
       }
 
-      const args = input.split(' ').filter((val) => val);
+      const args = userInput.split(' ').filter((val) => val);
       const result = await runSafely(exec, args);
       if (isErr(result)) {
         console.log(result.error.config.message);
