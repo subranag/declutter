@@ -12,7 +12,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.1",
+    "@ai-sdk/anthropic": "^3.0.2",
     "@ai-sdk/google": "^3.0.1",
     "@ai-sdk/openai": "^3.0.1",
     "@openrouter/ai-sdk-provider": "^1.5.4",

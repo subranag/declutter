@@ -20,13 +20,13 @@ import { access, constants } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOllama } from 'ai-sdk-ollama';
 import { isErr } from 'cmd-ts/dist/cjs/Result';
 import { stdin as input, stdout as output } from 'process';
 import * as readline from 'readline/promises';
 import { DEFAULT_STYLE, stylesMap, type StyleName } from './outputs';
 import { warn } from './utility';
-import { th } from 'zod/locales';
 
 const HTTPS_START = /^https?:\/\//;
 const DEFAULT_FORMAT = 'pdf' as const;
@@ -96,7 +96,7 @@ type Provider = (typeof providers)[number];
 
 const provideDefaultModel: Record<Provider, string> = {
   gemini: 'gemini-2.5-flash',
-  anthropic: 'claude-4-sonnet',
+  anthropic: 'claude-sonnet-4-0',
   openai: 'gpt-4o-mini',
   openrouter: 'google/gemini-2.0-flash-exp:free',
   ollama: 'deepseek-r1:7b',
@@ -262,7 +262,7 @@ const getModel = (selctionInput: ModelSelectionInput): LanguageModel => {
         },
       });
     case ANTHROPIC_PROVIDER:
-      const anthropic = require('ai-sdk-anthropic').createAnthropic({
+      const anthropic = createAnthropic({
         apiKey: selctionInput.anthropicKey,
       });
       return anthropic(modelName ?? provideDefaultModel.anthropic);
