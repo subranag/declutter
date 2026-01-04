@@ -2,9 +2,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { type LanguageModel } from 'ai';
 import {
-  boolean,
   command,
-  flag,
   number,
   option,
   optional,
@@ -27,6 +25,8 @@ import { isErr } from 'cmd-ts/dist/cjs/Result';
 import { stdin as input, stdout as output } from 'process';
 import * as readline from 'readline/promises';
 import { DEFAULT_STYLE, stylesMap, type StyleName } from './outputs';
+import { warn } from './utility';
+import { th } from 'zod/locales';
 
 const HTTPS_START = /^https?:\/\//;
 const DEFAULT_FORMAT = 'pdf' as const;
@@ -79,13 +79,37 @@ const UrlType: Type<string, URL> = {
   },
 };
 
-const provideDefaultModel = {
+const GEMINI_PROVIDER = 'gemini';
+const ANTHROPIC_PROVIDER = 'anthropic';
+const OPENAI_PROVIDER = 'openai';
+const OPENROUTER_PROVIDER = 'openrouter';
+const OLLAMA_PROVIDER = 'ollama';
+const providers = [
+  GEMINI_PROVIDER,
+  ANTHROPIC_PROVIDER,
+  OPENAI_PROVIDER,
+  OPENROUTER_PROVIDER,
+  OLLAMA_PROVIDER,
+] as const;
+
+type Provider = (typeof providers)[number];
+
+const provideDefaultModel: Record<Provider, string> = {
   gemini: 'gemini-2.5-flash',
   anthropic: 'claude-4-sonnet',
   openai: 'gpt-4o-mini',
   openrouter: 'google/gemini-2.0-flash-exp:free',
   ollama: 'deepseek-r1:7b',
-} as const;
+};
+
+const ProviderType: Type<string, Provider> = {
+  async from(params: string): Promise<Provider> {
+    if (!params || !providers.includes(params as Provider)) {
+      throw new Error(`provider can only be one of : ${providers.join(', ')}`);
+    }
+    return params as Provider;
+  },
+};
 
 const exec = command({
   name: 'exec',
@@ -145,6 +169,13 @@ const exec = command({
       short: 'r',
       description: `the Open router API key to be used, by default the env variable OPENROUTER_API_KEY is used`,
     }),
+    anthropicKey: option({
+      type: optional(string),
+      long: 'anthropic-key',
+      env: 'ANTHROPIC_API_KEY',
+      short: 'a',
+      description: `the Anthropic API key to be used, by default the env variable ANTHROPIC_API_KEY is used`,
+    }),
     modelName: option({
       type: optional(string),
       long: 'model-name',
@@ -154,16 +185,20 @@ const exec = command({
   if a model is not provided the tool will use its own default model for each provider\n${Object.entries(
     provideDefaultModel
   )
-    .map(([provider, model]) => `  - ${provider} -> ${model}`)
+    .map(([provider, model]) => `  * ${provider} -> ${model}`)
     .join('\n')}
       `,
     }),
-    useOllama: flag({
-      type: boolean,
-      long: 'ollama',
-      short: 'l',
-      description:
-        'use local ollama model for decluttering (ollama must be installed) and model must be present',
+    provider: option({
+      type: optional(ProviderType),
+      long: 'provider',
+      short: 'p',
+      description: `The AI provider to use, provided input should be one of\n${Object.entries(
+        provideDefaultModel
+      )
+        .map(([provider, _]) => `  * ${provider}`)
+        .join('\n')}
+      NOTE: the API key for the provider must be provided via flags or env variables`,
     }),
   },
   handler: async ({
@@ -174,8 +209,9 @@ const exec = command({
     geminiKey,
     openAiKey,
     openRouterKey,
+    anthropicKey,
     modelName,
-    useOllama,
+    provider,
     styleName,
   }) => {
     try {
@@ -185,8 +221,9 @@ const exec = command({
           geminiKey,
           openAiKey,
           openRouterKey,
-          useOllama,
+          anthropicKey,
           modelName,
+          provider,
         }),
         maxTokens,
         outputFormat,
@@ -196,55 +233,115 @@ const exec = command({
     } catch (error) {
       if (error instanceof Error) {
         console.error(`❌ Error Decluttering: ${error.message}`);
+        throw error;
       }
     }
   },
 });
 
-const getModel = ({
-  geminiKey,
-  openAiKey,
-  openRouterKey,
-  useOllama,
-  modelName,
-}: {
+type ModelSelectionInput = {
   geminiKey?: string;
   openAiKey?: string;
   openRouterKey?: string;
-  useOllama: boolean;
+  anthropicKey?: string;
   modelName?: string;
-}): LanguageModel => {
-  if (useOllama) {
-    const ollama = createOllama();
-    return ollama(modelName ?? provideDefaultModel.ollama, {
-      options: {
-        num_ctx: 30000,
-      },
-    });
-  }
+  provider?: Provider;
+};
 
+const getModel = (selctionInput: ModelSelectionInput): LanguageModel => {
+  const resolvedProvider = resolveProvider(selctionInput);
+  const { geminiKey, openAiKey, openRouterKey, modelName } = selctionInput;
+
+  switch (resolvedProvider) {
+    case OLLAMA_PROVIDER:
+      const ollama = createOllama();
+      return ollama(modelName ?? provideDefaultModel.ollama, {
+        options: {
+          // TODO: make this configurable via flags
+          num_ctx: 30000,
+        },
+      });
+    case ANTHROPIC_PROVIDER:
+      const anthropic = require('ai-sdk-anthropic').createAnthropic({
+        apiKey: selctionInput.anthropicKey,
+      });
+      return anthropic(modelName ?? provideDefaultModel.anthropic);
+    case GEMINI_PROVIDER:
+      const google = createGoogleGenerativeAI({
+        apiKey: geminiKey,
+      });
+      return google(modelName ?? provideDefaultModel.gemini);
+    case OPENAI_PROVIDER:
+      const openAi = createOpenAI({
+        apiKey: openAiKey,
+      });
+      return openAi(modelName ?? provideDefaultModel.openai);
+    case OPENROUTER_PROVIDER:
+      const openRouter = createOpenRouter({
+        apiKey: openRouterKey,
+      });
+      return openRouter(modelName ?? provideDefaultModel.openrouter);
+  }
+};
+
+const resolveProvider = ({
+  provider,
+  geminiKey,
+  openAiKey,
+  anthropicKey,
+  openRouterKey,
+}: ModelSelectionInput): Provider => {
+  if (provider) {
+    switch (provider) {
+      case GEMINI_PROVIDER:
+        if (!geminiKey) {
+          throw new Error(
+            `provider set to ${GEMINI_PROVIDER} but no API key provided`
+          );
+        }
+        return GEMINI_PROVIDER;
+      case ANTHROPIC_PROVIDER:
+        if (!anthropicKey) {
+          throw new Error(
+            `provider set to ${ANTHROPIC_PROVIDER} but no API key provided`
+          );
+        }
+        return ANTHROPIC_PROVIDER;
+      case OPENAI_PROVIDER:
+        if (!openAiKey) {
+          throw new Error(
+            `provider set to ${OPENAI_PROVIDER} but no API key provided`
+          );
+        }
+        return OPENAI_PROVIDER;
+      case OPENROUTER_PROVIDER:
+        if (!openRouterKey) {
+          throw new Error(
+            `provider set to ${OPENROUTER_PROVIDER} but no API key provided`
+          );
+        }
+        return OPENROUTER_PROVIDER;
+      default:
+        return provider;
+    }
+  }
   if (geminiKey) {
-    const google = createGoogleGenerativeAI({
-      apiKey: geminiKey,
-    });
-    return google(modelName ?? provideDefaultModel.gemini);
+    return GEMINI_PROVIDER;
   }
-
   if (openAiKey) {
-    const openAi = createOpenAI({
-      apiKey: openAiKey,
-    });
-    return openAi(modelName ?? provideDefaultModel.openai);
+    return OPENAI_PROVIDER;
   }
-
   if (openRouterKey) {
-    const openRouter = createOpenRouter({
-      apiKey: openRouterKey,
-    });
-    return openRouter(modelName ?? provideDefaultModel.openrouter);
+    return OPENROUTER_PROVIDER;
+  }
+  if (anthropicKey) {
+    return ANTHROPIC_PROVIDER;
   }
 
-  throw new Error(`Please setup at least one provider as shown in the tool`);
+  warn(
+    `No provider could be resolved, assuming ${OLLAMA_PROVIDER} with local ollama model`
+  );
+  return OLLAMA_PROVIDER;
 };
 
 const repl = command({

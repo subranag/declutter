@@ -19,6 +19,9 @@ export const declutterToMarkdown = async (
     // temp is set to 0.0 for kind of deterministic output
     temperature: 0.0,
     maxOutputTokens: maxTokens,
+    onError: ({ error }) => {
+      throw error;
+    },
   });
 
   const sb = new StringBuilder();

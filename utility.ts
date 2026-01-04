@@ -74,6 +74,10 @@ export const ok = (msg: string) => {
   console.log(`✅ ${msg}`);
 };
 
+export const warn = (msg: string) => {
+  console.log(`⚠️ ${msg}`);
+};
+
 export function* loading(message: string) {
   const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   let i = 0;
@@ -95,8 +99,7 @@ export const runLoading = async <T>(
     loader.next();
   }, interval);
   try {
-    const retVal = await toRun;
-    return retVal;
+    return await toRun;
   } finally {
     clearInterval(timer);
     process.stdout.write('\r'); // Clear the loading line
