@@ -3,9 +3,22 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "config": {
+    "appName": "declutter"
+  },
   "scripts": {
-    "dev": "bun run src/index.ts",
-    "build": "bun build src/index.ts --target=bun --outdir ./dist"
+    "build": "bun run clean && bun run build:all",
+    "build:all": "bun run build:windows && bun run build:mac && bun run build:mac:arm && bun run build:linux && bun run build:linux:arm",
+    "build:windows": "bun build --compile --minify ./src/index.ts --outfile ./dist/$npm_package_config_appName-windows-x64.exe --target=bun-windows-x64",
+    "build:mac": "bun build --compile --minify ./src/index.ts --outfile ./dist/$npm_package_config_appName-macos-x64 --target=bun-darwin-x64",
+    "build:mac:arm": "bun build --compile --minify ./src/index.ts --outfile ./dist/$npm_package_config_appName-macos-arm64 --target=bun-darwin-arm64",
+    "build:linux": "bun build --compile --minify ./src/index.ts --outfile ./dist/$npm_package_config_appName-linux-x64 --target=bun-linux-x64",
+    "build:linux:arm": "bun build --compile --minify ./src/index.ts --outfile ./dist/$npm_package_config_appName-linux-arm64 --target=bun-linux-arm64",
+    "build:current": "bun build --compile --minify ./src/index.ts --outfile ./dist/app",
+    "clean": "rm -rf ./dist && rm -f ./.*.bun-build",
+    "postbuild": "chmod +x ./dist/$npm_package_config_appName* && rm -f ./.*.bun-build",
+    "dev": "bun run --watch ./src/index.ts",
+    "start": "bun run ./src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "1.3.5",
