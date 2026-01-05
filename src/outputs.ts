@@ -25,7 +25,7 @@ export const writeOutput = async ({
   outputDirectory,
 }: DeclutterInput & {
   readonly scraper: Scraper;
-  readonly declutteredMarkdown: string | undefined;
+  readonly declutteredMarkdown: string;
 }): Promise<void> => {
   const { directory, fileNamePrefix } = pathFromUrl(url);
 
@@ -36,14 +36,14 @@ export const writeOutput = async ({
   switch (outputFormat) {
     case 'md':
       const markdownPath = `${finalPath}.md`;
-      fs.writeFileSync(markdownPath, declutteredMarkdown!, {
+      fs.writeFileSync(markdownPath, declutteredMarkdown, {
         encoding: 'utf-8',
       });
       ok(`written output to ${markdownPath}`);
       break;
     case 'html':
       const finalHtml = styledHtml(
-        markdownToHtml(declutteredMarkdown!),
+        markdownToHtml(declutteredMarkdown),
         styleName
       );
       const htmlPath = `${finalPath}.html`;
@@ -54,7 +54,7 @@ export const writeOutput = async ({
       break;
     case 'pdf':
       const finalHtmlPdf = styledHtml(
-        markdownToHtml(declutteredMarkdown!),
+        markdownToHtml(declutteredMarkdown),
         styleName
       );
       const pdfPath = `${finalPath}.pdf`;

@@ -100,7 +100,7 @@ const providers = [
 type Provider = (typeof providers)[number];
 
 const provideDefaultModel: Record<Provider, string> = {
-  gemini: 'gemini-2.5-flash',
+  gemini: 'gemini-2.5-flash-lite',
   anthropic: 'claude-haiku-4-5',
   openai: 'gpt-4o-mini',
   openrouter: 'google/gemini-2.0-flash-exp:free',

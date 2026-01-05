@@ -7,7 +7,12 @@ export const declutterToMarkdown = async (
   toDeclutter: string,
   model: LanguageModel,
   maxTokens: number
-): Promise<string | undefined> => {
+): Promise<{
+  readonly markdown: string | undefined;
+  readonly inputTokens: number;
+  readonly outputTokens: number;
+  readonly totalTokens: number;
+}> => {
   if (!toDeclutter) {
     throw new Error(`input to declutter cannot be blank`);
   }
@@ -28,7 +33,13 @@ export const declutterToMarkdown = async (
   for await (const chunk of stream.textStream) {
     sb.add(chunk);
   }
-  return sb.stringify();
+  const usage = await stream.usage;
+  return {
+    markdown: sb.stringify(),
+    inputTokens: usage.inputTokens ?? 0,
+    outputTokens: usage.outputTokens ?? 0,
+    totalTokens: usage.totalTokens ?? 0,
+  };
 };
 
 const inputPrompt = `Now declutter the text provided in the document section 
