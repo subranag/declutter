@@ -27,7 +27,7 @@ import { stdin as input, stdout as output } from 'process';
 import * as readline from 'readline/promises';
 import {
   allowedFormats,
-  DEFAULT_OUTPUT_FORMAT,
+  PDF_OUTPUT_FORMAT,
   DEFAULT_STYLE,
   stylesMap,
   type AllowedFormats,
@@ -134,8 +134,8 @@ const exec = command({
       short: 'f',
       description: `format of the decluttered output should be one of : ${allowedFormats.join(
         ', '
-      )}, defaults to ${DEFAULT_OUTPUT_FORMAT}`,
-      defaultValue: () => DEFAULT_OUTPUT_FORMAT,
+      )}, defaults to ${PDF_OUTPUT_FORMAT}`,
+      defaultValue: () => PDF_OUTPUT_FORMAT,
     }),
     styleName: option({
       type: OutputStyling,

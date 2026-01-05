@@ -1,9 +1,8 @@
 import * as fs from 'fs';
-import { markdownToHtml, ok, runLoading } from './utility';
-import type { Scraper } from './page';
-import type { DeclutterInput } from './declutter';
 import path from 'path';
-import { de } from 'zod/locales';
+import type { DeclutterInput } from './declutter';
+import type { Scraper } from './page';
+import { markdownToHtml, ok, runLoading } from './utility';
 
 const HTML_DATA_PLACEHOLDER = '__HTML_DATA__';
 const STYLE_DATA_PLACEHOLDER = '__STYLE_DATA__';
@@ -11,10 +10,21 @@ const STYLE_DATA_PLACEHOLDER = '__STYLE_DATA__';
 export type StyleName = keyof typeof stylesMap;
 export const DEFAULT_STYLE: StyleName = 'MINIMALIST_SWISS';
 
-export const DEFAULT_OUTPUT_FORMAT = 'pdf' as const;
-export const allowedFormats = ['md', DEFAULT_OUTPUT_FORMAT, 'html'] as const;
+export const PDF_OUTPUT_FORMAT = 'pdf' as const;
+export const MARKDOWN_OUTPUT_FORMAT = 'md' as const;
+export const HTML_OUTPUT_FORMAT = 'html' as const;
+export const allowedFormats = [
+  MARKDOWN_OUTPUT_FORMAT,
+  PDF_OUTPUT_FORMAT,
+  HTML_OUTPUT_FORMAT,
+] as const;
 export type AllowedFormats = (typeof allowedFormats)[number];
 const DECLUTTERED_DIRECTORY = 'Decluttered';
+
+export type AllowedConvertToFormats = Exclude<
+  AllowedFormats,
+  typeof MARKDOWN_OUTPUT_FORMAT
+>;
 
 export const writeOutput = async ({
   scraper,
@@ -34,25 +44,30 @@ export const writeOutput = async ({
   const finalPath = `${finalDirectory}${path.sep}${fileNamePrefix}`;
 
   switch (outputFormat) {
-    case 'md':
-      const markdownPath = `${finalPath}.md`;
+    case MARKDOWN_OUTPUT_FORMAT:
+      const markdownPath = `${finalPath}.${MARKDOWN_OUTPUT_FORMAT}`;
       fs.writeFileSync(markdownPath, declutteredMarkdown, {
         encoding: 'utf-8',
       });
       ok(`written output to ${markdownPath}`);
       break;
-    case 'html':
+    case HTML_OUTPUT_FORMAT:
       const finalHtml = styledHtml(
         markdownToHtml(declutteredMarkdown),
         styleName
       );
-      const htmlPath = `${finalPath}.html`;
+      const htmlPath = `${finalPath}.${HTML_OUTPUT_FORMAT}`;
       fs.writeFileSync(htmlPath, finalHtml, {
         encoding: 'utf-8',
       });
       ok(`written output to ${htmlPath}`);
+      const markdownPathHtml = `${finalPath}.${MARKDOWN_OUTPUT_FORMAT}`;
+      fs.writeFileSync(markdownPathHtml, declutteredMarkdown, {
+        encoding: 'utf-8',
+      });
+      ok(`RAW markdown content written to ${markdownPathHtml}`);
       break;
-    case 'pdf':
+    case PDF_OUTPUT_FORMAT:
       const finalHtmlPdf = styledHtml(
         markdownToHtml(declutteredMarkdown),
         styleName
@@ -63,6 +78,11 @@ export const writeOutput = async ({
         'Generating PDF...'
       );
       ok(`written output to ${pdfPath}`);
+      const markdownPathPdf = `${finalPath}.md`;
+      fs.writeFileSync(markdownPathPdf, declutteredMarkdown, {
+        encoding: 'utf-8',
+      });
+      ok(`RAW markdown content written to ${markdownPathPdf}`);
       break;
     default:
       throw new Error(`unknown format: ${outputFormat} cannot generate output`);
