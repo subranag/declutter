@@ -137,17 +137,7 @@ export class Scraper {
             } as PermissionStatus)
           : originalQuery(parameters);
 
-      // Overwrite plugins
-      Object.defineProperty(navigator, 'plugins', {
-        get: () => [1, 2, 3, 4, 5],
-      });
-
-      // Overwrite languages
-      Object.defineProperty(navigator, 'languages', {
-        get: () => ['en-US', 'en'],
-      });
-
-      // Override plugins to make it look real
+      // Mock plugins to appear as a real browser
       Object.defineProperty(navigator, 'plugins', {
         get: () => [
           {
@@ -155,14 +145,98 @@ export class Scraper {
               type: 'application/x-google-chrome-pdf',
               suffixes: 'pdf',
               description: 'Portable Document Format',
+              enabledPlugin: Plugin,
             },
             description: 'Portable Document Format',
             filename: 'internal-pdf-viewer',
             length: 1,
             name: 'Chrome PDF Plugin',
           },
+          {
+            0: {
+              type: 'application/pdf',
+              suffixes: 'pdf',
+              description: '',
+              enabledPlugin: Plugin,
+            },
+            description: '',
+            filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai',
+            length: 1,
+            name: 'Chrome PDF Viewer',
+          },
+          {
+            0: {
+              type: 'application/x-nacl',
+              suffixes: '',
+              description: 'Native Client Executable',
+              enabledPlugin: Plugin,
+            },
+            1: {
+              type: 'application/x-pnacl',
+              suffixes: '',
+              description: 'Portable Native Client Executable',
+              enabledPlugin: Plugin,
+            },
+            description: '',
+            filename: 'internal-nacl-plugin',
+            length: 2,
+            name: 'Native Client',
+          },
         ],
       });
+
+      // Overwrite languages
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en'],
+      });
+
+      // Mock chrome runtime
+      (window as any).chrome = {
+        runtime: {},
+      };
+
+      // Override toString methods to avoid detection
+      const originalToString = Function.prototype.toString;
+      Function.prototype.toString = function () {
+        if (this === window.navigator.permissions.query) {
+          return 'function query() { [native code] }';
+        }
+        return originalToString.call(this);
+      };
+
+      // Add realistic platform info
+      Object.defineProperty(navigator, 'platform', {
+        get: () => 'Win32',
+      });
+
+      // Mock hardware concurrency
+      Object.defineProperty(navigator, 'hardwareConcurrency', {
+        get: () => 8,
+      });
+
+      // Mock device memory
+      Object.defineProperty(navigator, 'deviceMemory', {
+        get: () => 8,
+      });
+
+      // Override iframe contentWindow to avoid detection
+      const originalContentWindow = Object.getOwnPropertyDescriptor(
+        HTMLIFrameElement.prototype,
+        'contentWindow'
+      );
+      if (originalContentWindow) {
+        Object.defineProperty(HTMLIFrameElement.prototype, 'contentWindow', {
+          get: function () {
+            const win = originalContentWindow.get?.call(this);
+            if (win) {
+              try {
+                (win as any).navigator.webdriver = false;
+              } catch {}
+            }
+            return win;
+          },
+        });
+      }
     });
 
     // Set timeout

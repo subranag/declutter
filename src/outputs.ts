@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import path from 'path';
 import type { DeclutterInput } from './declutter';
-import type { Scraper } from './page';
+import { Scraper } from './page';
 import { markdownToHtml, ok, runLoading } from './utility';
 
 const HTML_DATA_PLACEHOLDER = '__HTML_DATA__';
@@ -25,6 +25,78 @@ export type AllowedConvertToFormats = Exclude<
   AllowedFormats,
   typeof MARKDOWN_OUTPUT_FORMAT
 >;
+
+export const convertMarkdownTo = async ({
+  markdownFilePath,
+  outputFormat,
+  styleName,
+}: {
+  readonly markdownFilePath: string;
+  readonly outputFormat: AllowedConvertToFormats;
+  readonly styleName: StyleName;
+}) => {
+  if (!markdownFilePath.endsWith(`.${MARKDOWN_OUTPUT_FORMAT}`)) {
+    throw new Error(
+      `invalid markdown file extension, must end with .${MARKDOWN_OUTPUT_FORMAT}`
+    );
+  }
+
+  if (!fs.existsSync(markdownFilePath)) {
+    throw new Error(`markdown file does not exist: ${markdownFilePath}`);
+  }
+
+  const markdownContent = fs.readFileSync(markdownFilePath, {
+    encoding: 'utf-8',
+  });
+
+  switch (outputFormat) {
+    case HTML_OUTPUT_FORMAT: {
+      const finalHtml = styledHtml(markdownToHtml(markdownContent), styleName);
+      const htmlPath = markdownFilePath.replace(
+        /\.md$/i,
+        `.${HTML_OUTPUT_FORMAT}`
+      );
+      fs.writeFileSync(htmlPath, finalHtml, {
+        encoding: 'utf-8',
+      });
+      ok(`written output to ${htmlPath}`);
+      break;
+    }
+    case PDF_OUTPUT_FORMAT: {
+      const finalHtml = styledHtml(
+        markdownToHtml(markdownContent),
+        DEFAULT_STYLE
+      );
+      const pdfPath = markdownFilePath.replace(
+        /\.md$/i,
+        `.${PDF_OUTPUT_FORMAT}`
+      );
+
+      let scraper: Scraper = new Scraper({
+        headless: true,
+        timeout: 30000,
+      });
+
+      try {
+        if (!scraper.isInitialized()) {
+          await scraper.initialize();
+        }
+
+        await runLoading(
+          scraper.printPdf(finalHtml, pdfPath),
+          'Generating PDF...'
+        );
+
+        ok(`written output to ${pdfPath}`);
+      } finally {
+        scraper.close();
+      }
+      break;
+    }
+    default:
+      throw new Error(`unknown format: ${outputFormat} cannot generate output`);
+  }
+};
 
 export const writeOutput = async ({
   scraper,
