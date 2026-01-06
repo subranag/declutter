@@ -36,7 +36,9 @@
     "ai": "^6.0.3",
     "ai-sdk-ollama": "^3.0.1",
     "cmd-ts": "^0.14.3",
+    "highlight.js": "^11.11.1",
     "marked": "^17.0.1",
+    "marked-highlight": "^2.2.3",
     "puppeteer": "^24.34.0",
     "turndown": "^7.2.2",
     "zod": "^4.2.1"

@@ -30,7 +30,9 @@ import {
   PDF_OUTPUT_FORMAT,
   DEFAULT_STYLE,
   stylesMap,
+  convertMarkdownTo,
   type AllowedFormats,
+  type AllowedConvertToFormats,
   type StyleName,
 } from './outputs';
 import { warn } from './utility';
@@ -55,6 +57,23 @@ const OutputStyling: Type<string, StyleName> = {
       throw new Error(`style can only be one of : ${styleNames.join(', ')}`);
     }
     return params as StyleName;
+  },
+};
+
+const ConvertOutputFormatType: Type<string, AllowedConvertToFormats> = {
+  async from(params: string): Promise<AllowedConvertToFormats> {
+    const convertFormats = allowedFormats.filter(
+      (f) => f !== 'md'
+    ) as AllowedConvertToFormats[];
+    if (
+      !params ||
+      !convertFormats.includes(params as AllowedConvertToFormats)
+    ) {
+      throw new Error(
+        `format can only be one of : ${convertFormats.join(', ')}`
+      );
+    }
+    return params as AllowedConvertToFormats;
   },
 };
 
@@ -378,6 +397,46 @@ const repl = command({
   },
 });
 
+const convert = command({
+  name: 'convert',
+  description: `Convert a markdown file to another format (html or pdf)`,
+  args: {
+    markdownFilePath: positional({
+      type: string,
+      displayName: 'path to markdown file',
+    }),
+    outputFormat: option({
+      type: ConvertOutputFormatType,
+      long: 'format',
+      short: 'f',
+      description: `output format, can be one of: html, pdf`,
+      defaultValue: () => PDF_OUTPUT_FORMAT as AllowedConvertToFormats,
+    }),
+    styleName: option({
+      type: OutputStyling,
+      long: 'style',
+      short: 's',
+      description: `styling of the converted output should be one of : ${Object.keys(
+        stylesMap
+      ).join(', ')}, defaults to ${DEFAULT_STYLE}`,
+      defaultValue: () => DEFAULT_STYLE,
+    }),
+  },
+  handler: async ({ markdownFilePath, outputFormat, styleName }) => {
+    try {
+      await convertMarkdownTo({
+        markdownFilePath,
+        outputFormat,
+        styleName,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`❌ Error converting markdown: ${error.message}`);
+      }
+    }
+  },
+});
+
 const app = subcommands({
   name: 'declutter',
   description: `A super simple tool that declutters any URL provided into awesome documents for reading
@@ -387,6 +446,7 @@ const app = subcommands({
   cmds: {
     exec,
     repl,
+    convert,
   },
 });
 

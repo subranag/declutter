@@ -63,10 +63,7 @@ export const convertMarkdownTo = async ({
       break;
     }
     case PDF_OUTPUT_FORMAT: {
-      const finalHtml = styledHtml(
-        markdownToHtml(markdownContent),
-        DEFAULT_STYLE
-      );
+      const finalHtml = styledHtml(markdownToHtml(markdownContent), styleName);
       const pdfPath = markdownFilePath.replace(
         /\.md$/i,
         `.${PDF_OUTPUT_FORMAT}`
@@ -1131,8 +1128,16 @@ const htmlTemplate = `
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
         <style>
             ${STYLE_DATA_PLACEHOLDER}
+        </style>
+        <style>
+          pre code {
+            white-space: pre-wrap;
+            word-break: break-all; /* Optional: forces long words/lines to break */
+          }
         </style>
     </head>
     <body>

@@ -1,5 +1,7 @@
-import { marked } from 'marked';
+import { Marked } from 'marked';
 import TurndownService, { type Rule, type TagName } from 'turndown';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js/lib/common';
 
 const tdService = new TurndownService();
 const unwantedTags: TagName[] = [
@@ -47,8 +49,20 @@ export const convertToMarkDown = (input: string): string => {
   return input;
 };
 
+const marked = new Marked(
+  markedHighlight({
+    langPrefix: 'hljs language-',
+    highlight(code, lang, info) {
+      if (lang && hljs.getLanguage(lang)) {
+        return hljs.highlight(code, { language: lang }).value;
+      }
+      return hljs.highlightAuto(code).value;
+    },
+  })
+);
+
 export const markdownToHtml = (input: string): string => {
-  return marked(input, {
+  return marked.parse(input, {
     breaks: true,
     gfm: true,
   }) as string;
