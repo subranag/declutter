@@ -1,6 +1,6 @@
 import { runApp } from './app';
-import { pathFromUrl } from './outputs';
 
+globalThis.AI_SDK_LOG_WARNINGS = false;
 (async () => {
   await runApp(process.argv.slice(2));
 })();

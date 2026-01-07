@@ -22,7 +22,7 @@ import path from 'node:path';
 
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOllama } from 'ai-sdk-ollama';
-import { isErr } from 'cmd-ts/dist/cjs/Result';
+import { err, isErr } from 'cmd-ts/dist/cjs/Result';
 import { stdin as input, stdout as output } from 'process';
 import * as readline from 'readline/promises';
 import {
@@ -257,7 +257,8 @@ const exec = command({
       });
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`❌ Error Decluttering: ${error.message}`);
+        const cause = error.cause ? ` Cause: ${String(error.cause)}` : '';
+        console.error(`❌ Error Decluttering: ${error.message} ${cause}`);
       }
     }
   },
