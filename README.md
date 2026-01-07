@@ -28,7 +28,7 @@ Declutter is a CLI tool that strips away all the noise and gives you back what m
 Declutter analyzes web pages and intelligently removes non-content elements while preserving the actual article or page content. Here's the high-level flow:
 
 ```mermaid
-graph LR
+graph TD
     A[Web Page] -->|Fetch| B[Raw HTML]
     B -->|Parse & Analyze| C[DOM Tree]
     C -->|Identify Content| D[Article Detection]
