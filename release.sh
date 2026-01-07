@@ -56,6 +56,37 @@ echo -e "\n${GREEN}✓ Build completed successfully${NC}\n"
 echo -e "${YELLOW}Built binaries:${NC}"
 ls -lh dist/ | grep -E '^-' | awk '{print "  - " $9 " (" $5 ")"}'
 
+# Code sign macOS binaries
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo -e "\n${YELLOW}Code signing macOS binaries...${NC}\n"
+
+    # Check if codesign is available
+    if ! command -v codesign &> /dev/null; then
+        echo -e "${RED}Warning: codesign command not found. Skipping code signing.${NC}"
+    else
+        # List available signing identities
+        IDENTITIES=$(security find-identity -v -p codesigning 2>/dev/null | grep -oP '^\s*\K[^\s]+(?=\s)' | head -n 1)
+
+        if [ -z "$IDENTITIES" ]; then
+            echo -e "${YELLOW}No code signing certificates found. Using ad-hoc signing...${NC}"
+            # Ad-hoc signing (works locally, not for distribution)
+            codesign -s - --force --preserve-metadata=entitlements,requirements,flags,runtime dist/declutter-macos-x64
+            codesign -s - --force --preserve-metadata=entitlements,requirements,flags,runtime dist/declutter-macos-arm64
+        else
+            echo -e "${YELLOW}Found code signing identity. Signing binaries...${NC}"
+            codesign -s "$IDENTITIES" --force --preserve-metadata=entitlements,requirements,flags,runtime dist/declutter-macos-x64
+            codesign -s "$IDENTITIES" --force --preserve-metadata=entitlements,requirements,flags,runtime dist/declutter-macos-arm64
+        fi
+
+        # Verify signatures
+        echo -e "\n${YELLOW}Verifying code signatures...${NC}"
+        codesign -v dist/declutter-macos-x64 && echo -e "${GREEN}✓ Signed: declutter-macos-x64${NC}" || echo -e "${RED}✗ Failed: declutter-macos-x64${NC}"
+        codesign -v dist/declutter-macos-arm64 && echo -e "${GREEN}✓ Signed: declutter-macos-arm64${NC}" || echo -e "${RED}✗ Failed: declutter-macos-arm64${NC}"
+    fi
+else
+    echo -e "${YELLOW}Not running on macOS. Skipping code signing.${NC}"
+fi
+
 # Create the release
 echo -e "\n${YELLOW}Creating GitHub release v$VERSION...${NC}\n"
 

@@ -36,6 +36,7 @@ import {
   type StyleName,
 } from './outputs';
 import { warn } from './utility';
+import { th } from 'zod/locales';
 
 const HTTPS_START = /^https?:\/\//;
 
@@ -363,10 +364,9 @@ const resolveProvider = ({
     return ANTHROPIC_PROVIDER;
   }
 
-  warn(
-    `No provider could be resolved, assuming ${OLLAMA_PROVIDER} with local ollama model`
+  throw new Error(
+    `no API key provided or env variables set for any provider, please provide at least one API key. if you want to use local models via ${OLLAMA_PROVIDER} please set the provider flag to '${OLLAMA_PROVIDER}, for more details run 'declutter exec --help'`
   );
-  return OLLAMA_PROVIDER;
 };
 
 const repl = command({
