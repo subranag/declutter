@@ -87,17 +87,44 @@ else
     echo -e "${YELLOW}Not running on macOS. Skipping code signing.${NC}"
 fi
 
+# Create tar.gz archives for all binaries
+echo -e "\n${YELLOW}Creating tar.gz archives...${NC}\n"
+
+cd dist
+
+# Create archive for Windows
+tar -czf declutter-windows-x64.tar.gz declutter-windows-x64.exe
+echo -e "${GREEN}✓ Created declutter-windows-x64.tar.gz${NC}"
+
+# Create archive for macOS x64
+tar -czf declutter-macos-x64.tar.gz declutter-macos-x64
+echo -e "${GREEN}✓ Created declutter-macos-x64.tar.gz${NC}"
+
+# Create archive for macOS ARM64
+tar -czf declutter-macos-arm64.tar.gz declutter-macos-arm64
+echo -e "${GREEN}✓ Created declutter-macos-arm64.tar.gz${NC}"
+
+# Create archive for Linux x64
+tar -czf declutter-linux-x64.tar.gz declutter-linux-x64
+echo -e "${GREEN}✓ Created declutter-linux-x64.tar.gz${NC}"
+
+# Create archive for Linux ARM64
+tar -czf declutter-linux-arm64.tar.gz declutter-linux-arm64
+echo -e "${GREEN}✓ Created declutter-linux-arm64.tar.gz${NC}"
+
+cd ..
+
 # Create the release
 echo -e "\n${YELLOW}Creating GitHub release v$VERSION...${NC}\n"
 
 gh release create "v$VERSION" \
     --title "declutter v$VERSION" \
     --notes "Release v$VERSION of declutter" \
-    dist/declutter-windows-x64.exe \
-    dist/declutter-macos-x64 \
-    dist/declutter-macos-arm64 \
-    dist/declutter-linux-x64 \
-    dist/declutter-linux-arm64
+    dist/declutter-windows-x64.tar.gz \
+    dist/declutter-macos-x64.tar.gz \
+    dist/declutter-macos-arm64.tar.gz \
+    dist/declutter-linux-x64.tar.gz \
+    dist/declutter-linux-arm64.tar.gz
 
 echo -e "\n${GREEN}✓ Release created successfully!${NC}"
 echo -e "${GREEN}✓ Release page: https://github.com/$(gh repo view --json nameWithOwner -q)/releases/tag/v$VERSION${NC}\n"
