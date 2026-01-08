@@ -63,7 +63,7 @@ export class Scraper {
 
     const page = await this.browser.newPage();
     // we are setting the page content, wait for all the images to load
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    await page.setContent(htmlContent, { waitUntil: 'networkidle2' });
 
     await page.pdf({
       path: documentPath,

@@ -29,7 +29,7 @@ export async function declutterUrl(declutterInput: DeclutterInput) {
       humanBehavior: true,
     });
 
-    const tempMarkdown = convertToMarkDown(html);
+    const tempMarkdown = convertToMarkDown(html, url.hostname);
 
     console.log(`🪄 Starting declutter`);
     const {

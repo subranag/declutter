@@ -41,8 +41,38 @@ const tableRule: Rule = {
   },
 };
 
-export const convertToMarkDown = (input: string): string => {
+export const convertToMarkDown = (input: string, hostname: string): string => {
   tdService.addRule('table', tableRule);
+
+  tdService.addRule('images', {
+    filter: 'img',
+    replacement: function (content, node) {
+      const imgNode = node as HTMLImageElement;
+      const alt = imgNode.alt || '';
+      let src = imgNode.getAttribute('src') || '';
+      const title = imgNode.title || '';
+
+      // Convert relative URLs to absolute
+      if (src && !src.match(/^https?:\/\//)) {
+        // Handle protocol-relative URLs
+        if (src.startsWith('//')) {
+          src = 'https:' + src;
+        }
+        // Handle paths starting with /
+        else if (src.startsWith('/')) {
+          src = hostname + src;
+        }
+        // Handle relative paths
+        else {
+          src = hostname + '/' + src;
+        }
+      }
+
+      const titlePart = title ? ' "' + title + '"' : '';
+      return src ? '![' + alt + '](' + src + titlePart + ')' : '';
+    },
+  });
+
   if (input) {
     return tdService.turndown(input);
   }
