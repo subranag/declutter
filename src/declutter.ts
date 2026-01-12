@@ -11,6 +11,7 @@ export interface DeclutterInput {
   readonly outputFormat: AllowedFormats;
   readonly outputDirectory: string;
   readonly styleName: StyleName;
+  readonly browserPath?: string;
 }
 
 let scraper: Scraper = new Scraper({
@@ -19,10 +20,10 @@ let scraper: Scraper = new Scraper({
 });
 
 export async function declutterUrl(declutterInput: DeclutterInput) {
-  const { url, model, maxTokens } = declutterInput;
+  const { url, model, maxTokens, browserPath } = declutterInput;
   try {
     if (!scraper.isInitialized()) {
-      await scraper.initialize();
+      await scraper.initialize(browserPath);
     }
 
     const html = await scraper.scrapePage(url.href, {

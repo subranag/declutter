@@ -1,4 +1,4 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser, Page } from 'puppeteer-core';
 import { ok, runLoading } from './utility';
 
 // Helper function to add random delay (mimics human behavior)
@@ -33,8 +33,14 @@ export class Scraper {
     return this.browser !== null;
   }
 
-  async initialize(): Promise<void> {
+  async initialize(browserPath?: string): Promise<void> {
+    const browserConfig = browserPath
+      ? { executablePath: browserPath, browser: 'chrome' as const }
+      : { channel: 'chrome' as const };
+
     this.browser = await puppeteer.launch({
+      ...browserConfig,
+      channel: 'chrome',
       headless: this.config.headless,
       ignoreDefaultArgs: ['--enable-automation'],
       args: [

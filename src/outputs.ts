@@ -30,10 +30,12 @@ export const convertMarkdownTo = async ({
   markdownFilePath,
   outputFormat,
   styleName,
+  browserPath,
 }: {
   readonly markdownFilePath: string;
   readonly outputFormat: AllowedConvertToFormats;
   readonly styleName: StyleName;
+  readonly browserPath?: string;
 }) => {
   if (!markdownFilePath.endsWith(`.${MARKDOWN_OUTPUT_FORMAT}`)) {
     throw new Error(
@@ -76,7 +78,7 @@ export const convertMarkdownTo = async ({
 
       try {
         if (!scraper.isInitialized()) {
-          await scraper.initialize();
+          await scraper.initialize(browserPath);
         }
 
         await runLoading(

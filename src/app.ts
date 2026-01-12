@@ -22,25 +22,30 @@ import path from 'node:path';
 
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOllama } from 'ai-sdk-ollama';
-import { err, isErr } from 'cmd-ts/dist/cjs/Result';
+import { isErr } from 'cmd-ts/dist/cjs/Result';
 import { stdin as input, stdout as output } from 'process';
 import * as readline from 'readline/promises';
 import {
   allowedFormats,
-  PDF_OUTPUT_FORMAT,
-  DEFAULT_STYLE,
-  stylesMap,
   convertMarkdownTo,
-  type AllowedFormats,
+  DEFAULT_STYLE,
+  PDF_OUTPUT_FORMAT,
+  stylesMap,
   type AllowedConvertToFormats,
+  type AllowedFormats,
   type StyleName,
 } from './outputs';
-import { warn } from './utility';
-import { th } from 'zod/locales';
 
 const HTTPS_START = /^https?:\/\//;
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 10_000 as const;
+
+const browserPathArg = option({
+  type: optional(string),
+  long: 'browser-path',
+  short: 'b',
+  description: `the tool does it best to find the chrome in the standard install locations, but if you have custom installation of chrome you provide the path to the chrome executable using this option`,
+});
 
 const OutputFormatType: Type<string, AllowedFormats> = {
   async from(params: string): Promise<AllowedFormats> {
@@ -225,6 +230,7 @@ const exec = command({
         .join('\n')}
       NOTE: the API key for the provider must be provided via flags or env variables`,
     }),
+    browserPath: browserPathArg,
   },
   handler: async ({
     url,
@@ -238,6 +244,7 @@ const exec = command({
     modelName,
     provider,
     styleName,
+    browserPath,
   }) => {
     try {
       await declutterUrl({
@@ -254,6 +261,7 @@ const exec = command({
         outputFormat,
         outputDirectory,
         styleName,
+        browserPath,
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -422,13 +430,20 @@ const convert = command({
       ).join(', ')}, defaults to ${DEFAULT_STYLE}`,
       defaultValue: () => DEFAULT_STYLE,
     }),
+    browserPath: browserPathArg,
   },
-  handler: async ({ markdownFilePath, outputFormat, styleName }) => {
+  handler: async ({
+    markdownFilePath,
+    outputFormat,
+    styleName,
+    browserPath,
+  }) => {
     try {
       await convertMarkdownTo({
         markdownFilePath,
         outputFormat,
         styleName,
+        browserPath,
       });
     } catch (error) {
       if (error instanceof Error) {
