@@ -32,6 +32,9 @@ Declutter uses AI to intelligently extract the content you actually want—the a
 ✅ **Multiple formats** - Save as Markdown, HTML, or PDF  
 ✅ **Fast & flexible** - Works with Gemini, Claude, GPT, OpenRouter, or local Ollama models
 
+| ![Demo 1](./images/cool-gif-one.gif) | ![Demo 2](./images/cool-gif-two.gif) |
+| ------------------------------------ | ------------------------------------ |
+
 ---
 
 ## Installation
