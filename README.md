@@ -251,7 +251,7 @@ Issues, ideas, and pull requests welcome! Let's make the web readable again.
 
 ## License
 
-[Your license here]
+GNU General Public License v3.0
 
 ---
 
