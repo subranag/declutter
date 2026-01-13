@@ -1,53 +1,255 @@
-# Declutter
+# Declutter 🧹✨
 
-A simple tool to declutter and archive web pages
+**Take back the web. One clean page at a time.**
 
-## Why?
+A powerful CLI tool that strips away the chaos of the modern web and gives you pure, distraction-free content—archived locally, beautifully formatted, and ready to read.
 
-The modern web is drowning in noise. Visiting any article, blog, or news site has become an exhausting gauntlet of distractions:
+---
 
-- **Popups and interstitials** - Newsletter signups, cookie notices, and modal overlays assault you the moment a page loads
-- **Ad networks** - Third-party advertisements and sponsored content vie for your attention at every scroll
-- **Paywalls and login walls** - Signin prompts/popups block access to content before you can even read the headline
-- **Navigation clutter** - Massive menus, sidebars, and sticky headers consume precious screen real estate
-- **Tracking scripts** - Dozens of analytics and tracking pixels slow down pages while harvesting your behavior
+## The Problem
 
-The web was once a place for distraction-free reading and knowledge sharing. Today, even simple blogs and publications are so laden with ads and competing UI elements that finding the actual content feels like navigating a minefield. The signal to noise ratio has become unbearable.
+Remember when reading online was actually... enjoyable?
 
-## What You Get
+The modern web has become an assault course:
 
-Declutter is a CLI tool that strips away all the noise and gives you back what matters: **clean, readable content**. It processes web pages to remove ads, popups, navigation clutter, and other visual distractions, then archives the decluttered version locally for offline reading or long-term preservation.
+- 🚨 **Popups** ambush you before you read a single word
+- 📢 **Ads** scream for attention from every corner
+- 🔒 **Paywalls** block you from content you came to see
+- 🎯 **Tracking scripts** harvest your every move
+- 📊 **Navigation clutter** devours your screen space
 
-## How it Works
+**You didn't come to fight through noise. You came to read.**
 
-Declutter analyzes web pages and intelligently removes non-content elements while preserving the actual article or page content. Here's the high-level flow:
+---
 
-```mermaid
-graph TD
-    A[Web Page] -->|Fetch| B[Raw HTML]
-    B -->|Parse & Analyze| C[DOM Tree]
-    C -->|Identify Content| D[Article Detection]
-    D -->|Remove Noise| E[Cleaned HTML]
-    E -->|Format| F[Readable Output]
-    F -->|Archive| G[Local Storage]
+## The Solution
+
+Declutter uses AI to intelligently extract the content you actually want—the article, the story, the information—and discards everything else. Then it saves a beautifully formatted version locally, giving you:
+
+✅ **Zero distractions** - No ads, popups, or clutter  
+✅ **Offline access** - Read anywhere, anytime  
+✅ **Beautiful formatting** - Six professional styles to choose from  
+✅ **Multiple formats** - Save as Markdown, HTML, or PDF  
+✅ **Fast & flexible** - Works with Gemini, Claude, GPT, OpenRouter, or local Ollama models
+
+---
+
+## Installation
+
+### macOS
+
+The easiest way to install on Mac is via Homebrew:
+
+```bash
+brew tap subranag/declutter
+brew install declutter
 ```
 
-**Process breakdown:**
+### Linux
 
-1. **Fetch** - Download the target web page
-2. **Parse** - Convert HTML into a structured DOM tree
-3. **Detect** - Identify the main content area (article, blog post, etc.)
-4. **Clean** - Remove ads, popups, navigation, and clutter elements
-5. **Format** - Apply readable styling and layout
-6. **Archive** - Save the cleaned version locally for offline access
+Download the latest release for your architecture:
 
-## Caveats
+```bash
+# For x86_64
+curl -L https://github.com/subranag/declutter/releases/latest/download/declutter-linux-x86_64 -o declutter
+chmod +x declutter
+sudo mv declutter /usr/local/bin/
 
-Declutter works great for most websites, but it's not a universal solution:
+# For ARM64
+curl -L https://github.com/subranag/declutter/releases/latest/download/declutter-linux-arm64 -o declutter
+chmod +x declutter
+sudo mv declutter /usr/local/bin/
+```
 
-- **Not all sites are equal** - Some heavily JavaScript-rendered sites or paywalled content may not be fully supported
-- **Dynamic content** - Pages that load content after initial page load may require adjustments
-- **Site-specific limitations** - Complex custom layouts on some sites may not be perfectly detected
-- **Works best on** - News articles, blog posts, documentation, and article-focused websites
+### Windows
 
-For most traditional web pages and articles, Declutter delivers excellent results. For edge cases and highly customized sites, results may vary.
+Download the latest Windows executable from the [releases page](https://github.com/subranag/declutter/releases):
+
+1. Download `declutter-windows.exe` from the latest release
+2. Rename it to `declutter.exe`
+3. Move it to a directory in your PATH, or add its location to your PATH environment variable
+
+**Or use PowerShell:**
+
+```powershell
+# Download to your preferred location
+Invoke-WebRequest -Uri "https://github.com/subranag/declutter/releases/latest/download/declutter-windows.exe" -OutFile "declutter.exe"
+
+# Move to a directory in your PATH (e.g., C:\Program Files\declutter\)
+```
+
+### Verify Installation
+
+```bash
+declutter --version
+```
+
+---
+
+## Quick Start
+
+### Declutter a Single Page
+
+```bash
+# Using default settings (Gemini + PDF output)
+declutter exec https://example.com/article
+
+# With your preferred provider
+declutter exec https://news.site/story --provider anthropic
+
+# Choose your style
+declutter exec https://blog.com/post --style CLASSIC_BOOK --format pdf
+```
+
+### Interactive Mode (Process Multiple URLs)
+
+```bash
+# Launch REPL mode
+declutter repl --provider openai --style MINIMALIST_MODERN
+
+# Then paste URLs one at a time as you browse
+```
+
+### Convert Existing Markdown
+
+```bash
+# Turn your markdown files into styled PDFs or HTML
+declutter convert ~/Documents/notes.md --format pdf --style REFINED_ELEGANCE
+```
+
+---
+
+## Choose Your Style 🎨
+
+Declutter offers six carefully crafted visual styles:
+
+| Style                  | Perfect For                         |
+| ---------------------- | ----------------------------------- |
+| **MINIMALIST_SWISS**   | Clean, grid-based reading (default) |
+| **BRUTALIST_CONCRETE** | Bold, statement typography          |
+| **CLASSIC_BOOK**       | Traditional, book-like elegance     |
+| **TECH_TERMINAL**      | Monospace, developer-friendly       |
+| **MINIMALIST_MODERN**  | Contemporary and spacious           |
+| **REFINED_ELEGANCE**   | Sophisticated and polished          |
+
+---
+
+## Supported AI Providers
+
+Pick the model that works for you:
+
+- **Gemini** - Fast and free (default: `gemini-2.5-flash`)
+- **Anthropic** - High quality (default: `claude-haiku-4-5`)
+- **OpenAI** - Reliable classic (default: `gpt-4o-mini`)
+- **OpenRouter** - Access to many models (default: `google/gemini-2.0-flash-exp:free`)
+- **Ollama** - Run locally, 100% private (default: `deepseek-r1:7b`)
+
+Configure with environment variables or command flags. See the [full documentation](#) for API key setup.
+
+---
+
+## Real-World Examples
+
+**Save a research article for offline reading:**
+
+```bash
+declutter exec https://research.edu/paper \
+  --provider anthropic \
+  --style CLASSIC_BOOK \
+  --format pdf \
+  --directory ~/Research
+```
+
+**Quickly grab news articles during your commute prep:**
+
+```bash
+declutter repl --provider gemini --format md --directory ~/ToRead
+# Then paste URLs from your browser
+```
+
+**Convert your markdown notes into beautiful PDFs:**
+
+```bash
+declutter convert ~/Notes/meeting-notes.md \
+  --format pdf \
+  --style REFINED_ELEGANCE
+```
+
+**Archive documentation with monospace styling:**
+
+```bash
+declutter exec https://docs.framework.com/guide \
+  --style TECH_TERMINAL \
+  --max_tokens 20000 \
+  --format html
+```
+
+---
+
+## Configuration
+
+**Set up your API keys (pick one or more):**
+
+```bash
+export GEMINI_API_KEY="your-key-here"
+export ANTHROPIC_API_KEY="your-key-here"
+export OPENAI_API_KEY="your-key-here"
+export OPENROUTER_API_KEY="your-key-here"
+# Ollama requires no API key
+```
+
+**Set your preferred default model (optional):**
+
+```bash
+export DEFAULT_DECLUTTER_MODEL="gpt-4o"
+```
+
+---
+
+## When It Shines ⭐
+
+Declutter works brilliantly for:
+
+- 📰 News articles and journalism
+- 📝 Blog posts and essays
+- 📚 Documentation and guides
+- 🔬 Research papers and reports
+- 💬 Long-form content of any kind
+
+**Fair warning:** Heavily JavaScript-dependent sites, complex web apps, or aggressive anti-scraping measures may not work perfectly. For 95% of the web's content, though? Declutter delivers.
+
+---
+
+## Why You'll Love It
+
+🎯 **Laser-focused on content** - Gets the signal, kills the noise  
+⚡ **Blazingly fast** - Process pages in seconds  
+🎨 **Gorgeous output** - Professional styling out of the box  
+🔒 **Privacy-first** - Use local models if you want  
+🛠️ **Flexible** - Works with your preferred AI provider  
+📦 **Portable** - Take your archived content anywhere
+
+---
+
+## Get Started Now
+
+```bash
+# Try it on this README!
+declutter exec https://github.com/yourusername/declutter
+```
+
+**The web doesn't have to be exhausting. Take it back.**
+
+---
+
+## Contributing
+
+Issues, ideas, and pull requests welcome! Let's make the web readable again.
+
+## License
+
+[Your license here]
+
+---
+
+_Made with ❤️ for people who just want to read_
