@@ -77,31 +77,37 @@ Download the latest release for your architecture:
 
 ```bash
 # For x86_64
-curl -L https://github.com/subranag/declutter/releases/latest/download/declutter-linux-x86_64 -o declutter
-chmod +x declutter
-sudo mv declutter /usr/local/bin/
+curl -L https://github.com/subranag/declutter/releases/download/vlatest/declutter-linux-x64.tar.gz -o declutter-linux-x64.tar.gz
+tar -xzf declutter-linux-x64.tar.gz
+chmod +x declutter-linux-x64
+sudo mv declutter-linux-x64 /usr/local/bin/declutter
 
 # For ARM64
-curl -L https://github.com/subranag/declutter/releases/latest/download/declutter-linux-arm64 -o declutter
-chmod +x declutter
-sudo mv declutter /usr/local/bin/
+curl -L https://github.com/subranag/declutter/releases/download/vlatest/declutter-linux-arm64.tar.gz -o declutter-linux-arm64.tar.gz
+tar -xzf declutter-linux-arm64.tar.gz
+chmod +x declutter-linux-arm64
+sudo mv declutter-linux-arm64 /usr/local/bin/declutter
 ```
 
 ### Windows
 
 Download the latest Windows executable from the [releases page](https://github.com/subranag/declutter/releases):
 
-1. Download `declutter-windows.exe` from the latest release
-2. Rename it to `declutter.exe`
-3. Move it to a directory in your PATH, or add its location to your PATH environment variable
+1. Download `declutter-windows-x64.tar.gz` from the latest release
+2. Extract the archive (using 7-Zip, WinRAR, or Windows native extraction)
+3. Rename the extracted executable `declutter-windows-x64` to `declutter.exe`
+4. Move it to a directory in your PATH, or add its location to your PATH environment variable
 
 **Or use PowerShell:**
 
 ```powershell
-# Download to your preferred location
-Invoke-WebRequest -Uri "https://github.com/subranag/declutter/releases/latest/download/declutter-windows.exe" -OutFile "declutter.exe"
+# Download and extract
+Invoke-WebRequest -Uri "https://github.com/subranag/declutter/releases/download/vlatest/declutter-windows-x64.tar.gz" -OutFile "declutter-windows-x64.tar.gz"
+tar -xzf declutter-windows-x64.tar.gz
 
-# Move to a directory in your PATH (e.g., C:\Program Files\declutter\)
+# Rename and move to a directory in your PATH (e.g., C:\Program Files\declutter\)
+Rename-Item -Path "declutter-windows-x64" -NewName "declutter.exe"
+Move-Item -Path "declutter.exe" -Destination "C:\Program Files\declutter\"
 ```
 
 ### Verify Installation
