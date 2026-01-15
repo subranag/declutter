@@ -247,21 +247,33 @@ const exec = command({
     browserPath,
   }) => {
     try {
+      const resolvedProvider = resolveProvider({
+        geminiKey,
+        openAiKey,
+        openRouterKey,
+        anthropicKey,
+        provider,
+      });
+      const model = getModel({
+        geminiKey,
+        openAiKey,
+        openRouterKey,
+        anthropicKey,
+        modelName,
+        provider,
+      });
+      const displayModelName = modelName ?? provideDefaultModel[resolvedProvider];
+
       await declutterUrl({
         url: url,
-        model: getModel({
-          geminiKey,
-          openAiKey,
-          openRouterKey,
-          anthropicKey,
-          modelName,
-          provider,
-        }),
+        model: model,
         maxTokens,
         outputFormat,
         outputDirectory,
         styleName,
         browserPath,
+        provider: resolvedProvider,
+        modelName: displayModelName,
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -373,8 +385,21 @@ const resolveProvider = ({
     return ANTHROPIC_PROVIDER;
   }
 
+  const providerSetupInfo = Object.entries(provideDefaultModel)
+    .map(
+      ([provider, defaultModel]) =>
+        `  ${provider}:\n    Set API key via: ${
+          provider === OLLAMA_PROVIDER
+            ? '(Local - no key needed)'
+            : `${provider.toUpperCase()}_API_KEY`
+        }\n    Default model: ${defaultModel}`
+    )
+    .join('\n');
+
   throw new Error(
-    `no API key provided or env variables set for any provider, please provide at least one API key. if you want to use local models via ${OLLAMA_PROVIDER} please set the provider flag to '${OLLAMA_PROVIDER}, for more details run 'declutter exec --help'`
+    `No API key provided.\n\nTo use declutter, you must set at least one of the following API key environment variables:\n\n${providerSetupInfo}\n\nIf you have multiple API keys configured, you can specify which provider to use with the --provider flag:\n  declutter exec <url> --provider <provider-name> (should be one of ${Object.keys(
+      provideDefaultModel
+    )}) \n\nFor more details, run: declutter exec --help`
   );
 };
 

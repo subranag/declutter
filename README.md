@@ -1,5 +1,28 @@
 # Declutter 🧹✨
 
+**Table of Contents**
+
+- [The Problem](#the-problem)
+- [The Solution](#the-solution)
+- [Installation](#installation)
+  - [macOS](#macos)
+  - [Linux](#linux)
+  - [Windows](#windows)
+  - [Verify Installation](#verify-installation)
+- [Quick Start](#quick-start)
+  - [Declutter a Single Page](#declutter-a-single-page)
+  - [Interactive Mode (Process Multiple URLs)](#interactive-mode-process-multiple-urls)
+  - [Convert Existing Markdown](#convert-existing-markdown)
+- [Choose Your Style 🎨](#choose-your-style-🎨)
+- [Supported AI Providers](#supported-ai-providers)
+- [Real-World Examples](#real-world-examples)
+- [Configuration](#configuration)
+- [When It Shines ⭐](#when-it-shines-⭐)
+- [Why You'll Love It](#why-youll-love-it)
+- [Get Started Now](#get-started-now)
+- [Contributing](#contributing)
+- [License](#license)
+
 **Take back the web. One clean page at a time.**
 
 A powerful CLI tool that strips away the chaos of the modern web and gives you pure, distraction-free content—archived locally, beautifully formatted, and ready to read.
@@ -84,7 +107,7 @@ Invoke-WebRequest -Uri "https://github.com/subranag/declutter/releases/latest/do
 ### Verify Installation
 
 ```bash
-declutter --version
+declutter --help
 ```
 
 ---

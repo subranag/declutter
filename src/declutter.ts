@@ -12,6 +12,8 @@ export interface DeclutterInput {
   readonly outputDirectory: string;
   readonly styleName: StyleName;
   readonly browserPath?: string;
+  readonly provider: string;
+  readonly modelName: string;
 }
 
 let scraper: Scraper = new Scraper({
@@ -33,6 +35,9 @@ export async function declutterUrl(declutterInput: DeclutterInput) {
     const tempMarkdown = convertToMarkDown(html, url.hostname);
 
     console.log(`🪄 Starting declutter`);
+    console.log(
+      `ℹ️ Provider: ${declutterInput.provider} | Model: ${declutterInput.modelName}`
+    );
     const {
       markdown: decluttered,
       inputTokens,
@@ -46,6 +51,8 @@ export async function declutterUrl(declutterInput: DeclutterInput) {
 
     const metadataTable = objectToMarkdownTable({
       url: url.href,
+      provider: declutterInput.provider,
+      model: declutterInput.modelName,
       time: new Date().toLocaleString('en-US', {
         year: 'numeric',
         month: 'long',

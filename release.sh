@@ -93,7 +93,7 @@ echo -e "\n${YELLOW}Creating tar.gz archives...${NC}\n"
 cd dist
 
 # Create archive for Windows
-tar -czf declutter-windows-x64.tar.gz declutter-windows-x64.exe
+COPYFILE_DISABLE=1 tar -czf declutter-windows-x64.tar.gz declutter-windows-x64.exe
 echo -e "${GREEN}✓ Created declutter-windows-x64.tar.gz${NC}"
 
 # Create archive for macOS x64
@@ -105,11 +105,11 @@ tar -czf declutter-macos-arm64.tar.gz declutter-macos-arm64
 echo -e "${GREEN}✓ Created declutter-macos-arm64.tar.gz${NC}"
 
 # Create archive for Linux x64
-tar -czf declutter-linux-x64.tar.gz declutter-linux-x64
+COPYFILE_DISABLE=1 tar -czf declutter-linux-x64.tar.gz declutter-linux-x64
 echo -e "${GREEN}✓ Created declutter-linux-x64.tar.gz${NC}"
 
 # Create archive for Linux ARM64
-tar -czf declutter-linux-arm64.tar.gz declutter-linux-arm64
+COPYFILE_DISABLE=1 tar -czf declutter-linux-arm64.tar.gz declutter-linux-arm64
 echo -e "${GREEN}✓ Created declutter-linux-arm64.tar.gz${NC}"
 
 cd ..
