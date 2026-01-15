@@ -25,19 +25,21 @@ if ! command -v bun &> /dev/null; then
 fi
 
 # Prompt for version
-echo -e "${YELLOW}Enter the version for this release (e.g., 1.0.0, 0.1.0):${NC}"
+echo -e "${YELLOW}Enter the version for this release (e.g., 1.0.0, 0.1.0, or 'latest'):${NC}"
 read -p "> " VERSION
 
-# Validate version format (basic semantic versioning)
-if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
-    echo -e "${RED}Error: Invalid version format. Please use semantic versioning (e.g., 1.0.0)${NC}"
+# Validate version format (basic semantic versioning or "latest")
+if [[ "$VERSION" != "latest" ]] && ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+    echo -e "${RED}Error: Invalid version format. Please use semantic versioning (e.g., 1.0.0) or 'latest'${NC}"
     exit 1
 fi
 
-# Check if release tag already exists
-if git rev-parse "$VERSION" >/dev/null 2>&1; then
-    echo -e "${RED}Error: Release tag v$VERSION already exists${NC}"
-    exit 1
+# Check if release tag already exists (skip for "latest" as it may be updated)
+if [[ "$VERSION" != "latest" ]]; then
+    if git rev-parse "$VERSION" >/dev/null 2>&1; then
+        echo -e "${RED}Error: Release tag v$VERSION already exists${NC}"
+        exit 1
+    fi
 fi
 
 echo -e "\n${YELLOW}Building project for all platforms...${NC}\n"
